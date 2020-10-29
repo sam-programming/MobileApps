@@ -6,6 +6,7 @@ local composer = require( "composer" )
 local widget = require( "widget" )
 local dm = require( "data_management" )
 local chart = require("chart")
+local transform = require("transform")
 
 local scene = composer.newScene()
 
@@ -14,7 +15,6 @@ local scene = composer.newScene()
 local data, err = dm:Get_Data("data.csv")--, system.ResourceDirectory)
 -- make sure to do an error check here if err then do thing else do rest
 --print("data: " .. data[2].x .. ' ' .. data[2].y .. ' ' .. data[2].flag)
-
 
 -- the scene methods will be constructed here
 
@@ -32,28 +32,81 @@ function scene:create( event )
 	--variables that are returned from Chart_And_Plot
 	local chartGroup = display.newGroup()
 	local points = {}
+	local new_points = {}
 
 	-- call for a chart
 	chartGroup, points = chart:Chart_And_Plot(data)	
 	sceneGroup:insert(chartGroup)
+	-- insert points
+	
+	for x = 1, #points do
+		points[x].isVisible = true
+		chartGroup:insert(points[x])
+	end
 
-	-- create a button
+	-- columns for picker wheel	
+	local col_data = 
+	{
+		{
+			align = "left",
+			width = 140,
+			labelPadding = 5,
+			startIndex = 1,
+			--columnColor = 
+			labels = {"original", "y-squared", "absolute(y)", "exponential(y)", "cosine(y)", "hyperbolic cosine(y)", "arc tangent(y)", "mantissa exponent(y)", "sine(y)", "hyperbolic tangent(y)" }
+		}
+	}
+
+	--create a picker wheel
+	local transform_picker = widget.newPickerWheel(
+		{
+			x = display.contentCenterX * 0.52,
+			y = display.contentCenterY * 1.49,
+			columns = col_data,			
+			style = "resizable",
+			width = 140,
+			rowHeight = 25,
+			fontSize = 15			
+		}	
+	)
+
+	function btn_transform_clicked(event)
+		local value = transform_picker:getValues()
+		if value[1].value == "y-squared" then
+			local new_data = transform:Transform_SquareY(data)
+			for x = 1, #data do
+				print("in button click: " .. new_data[x].y)
+			end
+			chartGroup:removeSelf() -- very important
+			chartGroup = nil
+			chartGroup, new_points = chart:Chart_And_Plot(new_data)	
+			for x = 1, #new_points do
+				new_points[x].isVisible = true
+				chartGroup:insert(new_points[x])
+			end		
+		end			
+	end
+
+	-- create button
 	local button1 =  widget.newButton(
 		{
-			width = 130,
+			width = 100,
 			height = 40,
 			shape = "roundedRect",
 			cornerRadius = 2,
 			id = "btn1",
-			label = "Btn1",			
-			onEvent = handleButtonEvent
+			label = "Transform",			
+			onRelease = btn_transform_clicked
 		}
 	)
-	button1.x = display.contentCenterX * 0.5
+	--undo and redo can go under here
+
+	button1.x = display.contentCenterX * 1.5
 	button1.y = display.contentCenterY * 1.5
-	sceneGroup:insert(chartGroup)
-	--sceneGroup:insert(display_pane)
-	sceneGroup:insert(button1)
+
+	
+	sceneGroup:insert(transform_picker)		
+	--sceneGroup:insert(button1)
 end
 
 scene:addEventListener("create", scene)
