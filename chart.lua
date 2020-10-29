@@ -130,19 +130,24 @@ function chart:Chart_And_Plot(data)
 	end		
 
 	local point_ref = {}
-
+	local info = display.newText("dummy", 0, 0)
+	info.isVisible = false
 	local function onTouch( event )
-		if event.phase == "began" then
-			print( point_ref[event.target.x])
-			--display
-			--print()
-		end
-		if event.phase == "ended" then
-			print("Out")
+		if event.phase == "began" then			
+			local cords = point_ref[event.target.x].cords
+			info = display.newText(cords, event.x + 4, event.y - 10)
+			info:setFillColor(0.1, 0.1, 0.1)
+			info.size = 7.5
+			isVisible = false
+			if point_ref[event.target.x].flag == false then
+				info.isVisible = true
+			elseif point_ref[event.target.x].flag == true then
+				info.isVisible = false
+			end
+			point_ref[event.target.x].flag = not point_ref[event.target.x].flag
+			print(point_ref[event.target.x].flag)
 		end
 	end
-
-
 
     local points = {}
 	-- To find where the data point needs to be drawn, we find the 
@@ -155,7 +160,7 @@ function chart:Chart_And_Plot(data)
 		local x_inc = (x_inc_percent/100 * width)
 		--print(x_inc + start_x)
 		local point = display.newCircle( x_inc + start_x, height - y_inc - start_y, 3)	
-		point_ref[point.x] = "x: " .. data[x].x .. ", y: " .. data[x].y
+		point_ref[point.x] = {cords = "x: " .. data[x].x .. ", y: " .. data[x].y, flag = false}
 		if data[x].flag == 'B' then point:setFillColor(0, 0, 1) end
 		if data[x].flag == 'Z' then point:setFillColor(0, 1, 0) end
 		if data[x].flag == 'M' then point:setFillColor(1, 0, 0) end	
