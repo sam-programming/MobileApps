@@ -1,10 +1,9 @@
------------------------------------------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------------------------------------------
 -- Data Management Module
 -- Contains functions Get_Data( string path ) and Data_Transformation functions
 -----------------------------------------------------------------------------------------------------------------
 
 local data_management = {}
-
 
 -- gets data from a CSV file with exact formatting
 function data_management:Get_Data(path)
@@ -25,7 +24,7 @@ function data_management:Get_Data(path)
 			x, y, flag = string.match(line, "(%d+),(-*%d*%.?%d+),(%a)")			
 			flag = string.match(line, "(%a)")
 			data[i] = {x = x, y= y, flag = flag}
-			print("x: " .. data[i].x .. ", y: " .. data[i].y .. ", Flag: " .. data[i].flag) -- debug			
+			--print("x: " .. data[i].x .. ", y: " .. data[i].y .. ", Flag: " .. data[i].flag) -- debug			
 			i = i + 1
 		end
 		io.close(file)
@@ -44,7 +43,7 @@ function data_management:Round(num)
 end
 
 -- finds the maximum and minimum values of the data
-function data_management:MinMax(data) 
+function data_management:Min_Max(data) 
 	local min_x = tonumber(data[1].x)
 	local min_y = tonumber(data[1].y)
 	local max_x = tonumber(data[1].x)
@@ -57,36 +56,14 @@ function data_management:MinMax(data)
 	end
 	return min_x, min_y, max_x, max_y
 end
-
-function data_management:Transform_SquareX(data) 
-	for y = 1, #data do
-		data[y].x = data[y].x * data[y].x
+-- try to copy a table
+function data_management:Table_Copy(table)
+	local table_copy = {}
+	for x = 1, #table do
+		table_copy[x] = {x = table[x].x, y = table[x].y, flag = table[x].flag }
+		--print("Table copy.y: " .. table_copy[x].y)
 	end
-	return data
-end
-	
-function data_management:Transform_SquareY(data)
-	for x = 1, #data do
-		data[x].y = data[x].y * data[x].y
-	end
-	return data
-end
-
-function data_management.Transform_Log10X(data)
-	for y = 1, #data do
-		data[y].x = math.log(data[y].x)
-	end
-	return data
-end
-
-function data_management.Transform_LogY(data)
-	if math.min(data.y) < 0 then
-		for x = 1, #data do
-			data[x].y = math.log(data[x].y + 0.01)
-		end
-	end
-end
-
-
+	return table_copy
+  end
 
 return data_management
