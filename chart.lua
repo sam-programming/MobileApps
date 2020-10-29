@@ -8,11 +8,14 @@ local chart = {}
 -- Works
 local dm = require("data_management")
 
-
 -- The big one - creates a chart with lines and plots the data to it
 function chart:Chart_And_Plot(data)
 	
-	local min_x, min_y, max_x, max_y = dm:MinMax(data)	
+	for x = 1, #data do
+		print("in chart: " .. data[x].y)
+	end
+
+	local min_x, min_y, max_x, max_y = dm:Min_Max(data)	
 	min_x = math.floor(min_x)
 	max_x = math.ceil(max_x)
 	min_y = math.floor(min_y)
@@ -27,11 +30,10 @@ function chart:Chart_And_Plot(data)
 	end
 	for x = min_y, max_y do
 		y_range = y_range + 1
-		print(x)
-	end
-    
-    print("y_range: " .. y_range)
-    print("x_range: " .. x_range)
+		--print(x)
+	end    
+    --print("y_range: " .. y_range)
+    --print("x_range: " .. x_range)
     
 	local x_offset = 25
 	local y_offset = 50
@@ -56,21 +58,23 @@ function chart:Chart_And_Plot(data)
 	local start_x = border.x + 5-- 0
 	local start_y = border.y - 5-- 0
 
-	print("min x: " .. min_x)
+	--print("min x: " .. min_x)
 	-- Standardise the ranges so they start at 0 
 	local range_diff_x = 0 - min_x
 	local range_diff_y = 0 - min_y  --y_range - max_y
-	print("range_diff_x: " .. range_diff_x)
-
+	--print("range_diff_x: " .. range_diff_x)
+	
 	-- If ranges need standarding, do the same to the data
 	-- retain old data by standardising a new data table
+	local old_data = dm:Table_Copy(data)
+	
 	local new_data = data
 	local stand_min_x, stand_max_x, stand_min_y, stand_max_y
 
 	if range_diff_x ~= 0 then  -- data[].x values
 		stand_min_x = min_x + range_diff_x
 		stand_max_x = max_x + range_diff_x
-		print('Min x: ' .. stand_min_x .. ', Max x: ' .. stand_max_x)
+		--print('Min x: ' .. stand_min_x .. ', Max x: ' .. stand_max_x)
 		for x = 1, #new_data do
 			new_data[x].x = new_data[x].x + range_diff_x
 			--print(new_data[x].x)
@@ -83,7 +87,7 @@ function chart:Chart_And_Plot(data)
 	if range_diff_y ~= 0 then  -- data[].y values
 		stand_min_y = min_y + range_diff_y
 		stand_max_y = max_y + range_diff_y
-		print('Min y: ' .. stand_min_y .. ', Max y: ' .. stand_max_y)
+		--print('Min y: ' .. stand_min_y .. ', Max y: ' .. stand_max_y)
 		for x = 1, #new_data do
 			new_data[x].y = new_data[x].y + range_diff_y
 			--print(new_data[x].y)
@@ -95,7 +99,7 @@ function chart:Chart_And_Plot(data)
 	
 	-- 10% for each step (rounded up) - max 10 values
 	local step = dm:Round((10/100) * y_range)
-	print("Step: " .. step)
+	--print("Step: " .. step)
 	local y_range_val = min_y;
 	local cushion = 5;
 	
@@ -129,23 +133,22 @@ function chart:Chart_And_Plot(data)
 		x_range_val = x_range_val + step
 	end		
 
+	-- reference for the onTouch event
 	local point_ref = {}
-	local info = display.newText("dummy", 0, 0)
-	info.isVisible = false
+	
+	--Remove the object and prevent memory leaks
+	local function remove_obj( obj )
+		obj:removeSelf()
+		obj = nil
+	end
+
 	local function onTouch( event )
 		if event.phase == "began" then			
-			local cords = point_ref[event.target.x].cords
-			info = display.newText(cords, event.x + 4, event.y - 10)
+			local cords = point_ref[event.target.y].cords
+			local info = display.newText(cords, event.x + 4, event.y - 10)
 			info:setFillColor(0.1, 0.1, 0.1)
-			info.size = 7.5
-			isVisible = false
-			if point_ref[event.target.x].flag == false then
-				info.isVisible = true
-			elseif point_ref[event.target.x].flag == true then
-				info.isVisible = false
-			end
-			point_ref[event.target.x].flag = not point_ref[event.target.x].flag
-			print(point_ref[event.target.x].flag)
+			info.size = 12
+			transition.to(info, {time = 1500, onComplete = remove_obj})
 		end
 	end
 
@@ -159,8 +162,8 @@ function chart:Chart_And_Plot(data)
 		local x_inc_percent = ((new_data[x].x / (x_range - 1)) * 100)
 		local x_inc = (x_inc_percent/100 * width)
 		--print(x_inc + start_x)
-		local point = display.newCircle( x_inc + start_x, height - y_inc - start_y, 3)	
-		point_ref[point.x] = {cords = "x: " .. data[x].x .. ", y: " .. data[x].y, flag = false}
+		local point = display.newCircle( x_inc + start_x, height - y_inc - start_y, 4)	
+		point_ref[point.y] = {cords = "x: " .. old_data[x].x .. ", y: " .. old_data[x].y, flag = false}
 		if data[x].flag == 'B' then point:setFillColor(0, 0, 1) end
 		if data[x].flag == 'Z' then point:setFillColor(0, 1, 0) end
 		if data[x].flag == 'M' then point:setFillColor(1, 0, 0) end	
