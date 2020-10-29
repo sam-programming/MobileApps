@@ -25,7 +25,7 @@ function data_management:Get_Data(path)
 			x, y, flag = string.match(line, "(%d+),(-*%d*%.?%d+),(%a)")			
 			flag = string.match(line, "(%a)")
 			data[i] = {x = x, y= y, flag = flag}
-			print("Neuron: " .. data[i].x .. ", Weight: " .. data[i].y .. ", Flag: " .. data[i].flag) -- debug			
+			print("x: " .. data[i].x .. ", y: " .. data[i].y .. ", Flag: " .. data[i].flag) -- debug			
 			i = i + 1
 		end
 		io.close(file)
@@ -86,5 +86,7 @@ function data_management.Transform_LogY(data)
 		end
 	end
 end
+
+
 
 return data_management
