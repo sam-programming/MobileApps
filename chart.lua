@@ -11,10 +11,6 @@ local dm = require("data_management")
 -- The big one - creates a chart with lines and plots the data to it
 function chart:Chart_And_Plot(data)
 	
-	for x = 1, #data do
-		print("in chart: " .. data[x].y)
-	end
-
 	local min_x, min_y, max_x, max_y = dm:Min_Max(data)	
 	min_x = math.floor(min_x)
 	max_x = math.ceil(max_x)
@@ -161,7 +157,7 @@ function chart:Chart_And_Plot(data)
 		local x_inc = (x_inc_percent/100 * width)
 		--print(x_inc + start_x)
 		local point = display.newCircle( x_inc + start_x, height - y_inc - start_y, 4)	
-		point_ref[point.y] = {cords = "x: " .. old_data[x].x .. ", y: " .. old_data[x].y, flag = false}
+		point_ref[point.y] = {cords = "x: " .. old_data[x].x .. ", y: " .. old_data[x].y}
 		if data[x].flag == 'B' then point:setFillColor(0, 0, 1) end
 		if data[x].flag == 'Z' then point:setFillColor(0, 1, 0) end
 		if data[x].flag == 'M' then point:setFillColor(1, 0, 0) end	
