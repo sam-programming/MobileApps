@@ -10,11 +10,26 @@ local transform = require("transform")
 
 local scene = composer.newScene()
 
+
 -- Variables
 -- do this in scene:show() == "will"
 local data, err = dm:Get_Data("data.csv")--, system.ResourceDirectory)
 -- make sure to do an error check here if err then do thing else do rest
 --print("data: " .. data[2].x .. ' ' .. data[2].y .. ' ' .. data[2].flag)
+
+--debug function 
+function print_data(data)
+	for x=1, #data do
+		print("Data[x].y = " .. data[x].y)
+	end
+end
+
+function Insert_Points(points, group)
+	for x = 1, #points do
+		points[x].isVisible = true
+		group:insert(points[x])
+	end
+end
 
 -- the scene methods will be constructed here
 
@@ -34,15 +49,13 @@ function scene:create( event )
 	local points = {}
 	local new_points = {}
 
-	-- call for a chart
-	chartGroup, points = chart:Chart_And_Plot(data)	
+	-- call for a chart - returns data in state it was entered
+	data, chartGroup, points = chart:Chart_And_Plot(data)	
+	--print_data(data)
 	sceneGroup:insert(chartGroup)
-	-- insert points
-	
-	for x = 1, #points do
-		points[x].isVisible = true
-		chartGroup:insert(points[x])
-	end
+
+	-- insert points	
+	Insert_Points(points, chartGroup)
 
 	-- columns for picker wheel	
 	local col_data = 
@@ -53,7 +66,8 @@ function scene:create( event )
 			labelPadding = 5,
 			startIndex = 1,
 			--columnColor = 
-			labels = {"original", "y-squared", "absolute(y)", "exponential(y)", "cosine(y)", "hyperbolic cosine(y)", "arc tangent(y)", "mantissa exponent(y)", "sine(y)", "hyperbolic tangent(y)" }
+			labels = {"original", "y-squared", "absolute(y)", "exponential(y)", "cosine(y)", 
+						"hyperbolic cosine(y)", "arc tangent(y)", "mantissa exponent(y)", "sine(y)", "hyperbolic tangent(y)" }
 		}
 	}
 
@@ -72,14 +86,14 @@ function scene:create( event )
 
 	function btn_transform_clicked(event)
 		local value = transform_picker:getValues()
+		local new_data = dm:Table_Copy(data)
+		
 		if value[1].value == "y-squared" then
-			local new_data = transform:Transform_SquareY(data)
-			for x = 1, #data do
-				print("in button click: " .. new_data[x].y)
-			end
+			new_data = transform:Transform_SquareY(new_data)
+			
 			chartGroup:removeSelf() -- very important
 			chartGroup = nil
-			chartGroup, new_points = chart:Chart_And_Plot(new_data)	
+			new_data, chartGroup, new_points = chart:Chart_And_Plot(new_data)	
 			for x = 1, #new_points do
 				new_points[x].isVisible = true
 				chartGroup:insert(new_points[x])
@@ -112,4 +126,3 @@ end
 scene:addEventListener("create", scene)
 	
 return scene
-
