@@ -68,15 +68,14 @@ function chart:Chart_And_Plot(data)
 	-- retain old data by standardising a new data table
 	local old_data = dm:Table_Copy(data)
 	
-	local new_data = data
 	local stand_min_x, stand_max_x, stand_min_y, stand_max_y
 
 	if range_diff_x ~= 0 then  -- data[].x values
 		stand_min_x = min_x + range_diff_x
 		stand_max_x = max_x + range_diff_x
 		--print('Min x: ' .. stand_min_x .. ', Max x: ' .. stand_max_x)
-		for x = 1, #new_data do
-			new_data[x].x = new_data[x].x + range_diff_x
+		for x = 1, #data do
+			data[x].x = data[x].x + range_diff_x
 			--print(new_data[x].x)
 		end
 	else
@@ -88,26 +87,25 @@ function chart:Chart_And_Plot(data)
 		stand_min_y = min_y + range_diff_y
 		stand_max_y = max_y + range_diff_y
 		--print('Min y: ' .. stand_min_y .. ', Max y: ' .. stand_max_y)
-		for x = 1, #new_data do
-			new_data[x].y = new_data[x].y + range_diff_y
-			--print(new_data[x].y)
+		for x = 1, #data do
+			data[x].y = data[x].y + range_diff_y
+			--print(data[x].y)
 		end
 	else
 		stand_min_y = min_y
 		stand_max_y = max_y
 	end	
+
+	--chop a bit off height and width to look nice
+	width = 260
+	height = 210
 	
 	-- 10% for each step (rounded up) - max 10 values
 	local step = dm:Round((10/100) * y_range)
 	--print("Step: " .. step)
 	local y_range_val = min_y;
-	local cushion = 5;
 	
-	--chop a bit off height and width to look nice
-	width = 260
-	height = 210
-
-	-- place numbers at % of width on Y-Axis
+	-- place numbers at 10% of width on Y-Axis
 	for x = stand_min_y , stand_max_y, step do
 		-- percentage of step to actual range
 		local inc_percent = (x / (y_range - 1)) * 100	
@@ -157,9 +155,9 @@ function chart:Chart_And_Plot(data)
 	-- percentage it represents on the length or width of the axis
 	-- Display.newCircle(x, y, radius)
 	for x = 1, #data do 
-		local y_inc_percent = (new_data[x].y / (y_range - 1)) * 100
+		local y_inc_percent = (data[x].y / (y_range - 1)) * 100
 		local y_inc = (y_inc_percent/100) * height
-		local x_inc_percent = ((new_data[x].x / (x_range - 1)) * 100)
+		local x_inc_percent = ((data[x].x / (x_range - 1)) * 100)
 		local x_inc = (x_inc_percent/100 * width)
 		--print(x_inc + start_x)
 		local point = display.newCircle( x_inc + start_x, height - y_inc - start_y, 4)	
@@ -172,9 +170,8 @@ function chart:Chart_And_Plot(data)
        -- chartGroup:insert(point)
         points[x] = point
     end
-    
-    return chartGroup, points
+    -- becuase the data gets standardised, return it in original state
+    return old_data, chartGroup, points
 end
 
 return chart
-
